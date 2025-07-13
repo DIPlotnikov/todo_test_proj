@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./css/Filters.css";
 
 export default function Filters({ onSearch }) {
     const [sortBy, setSortBy] = useState("username");
@@ -14,19 +15,31 @@ export default function Filters({ onSearch }) {
     }
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <label>Сортировать по:</label>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+        <form className="filters-form" onSubmit={handleSubmit}>
+            <select 
+                className="filter-select"
+                value={sortBy} 
+                onChange={e => setSortBy(e.target.value)}
+            >
                 <option value="username">Имя</option>
                 <option value="email">Email</option>
                 <option value="is_completed">Статус</option>
             </select>
 
-            <button type="button" onClick={toggleOrder}>
+            <button 
+                type="button" 
+                className="order-btn"
+                onClick={toggleOrder}
+            >
                 Порядок: {order === "asc" ? "↑" : "↓"}
             </button>
 
-            <button type="submit">Найти</button>
+            <button 
+                type="submit" 
+                className="submit-btn"
+            >
+                Применить
+            </button>
         </form>
     );
 }

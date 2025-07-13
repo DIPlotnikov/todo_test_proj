@@ -16,9 +16,9 @@ const TaskList = () => {
     const [tasks, setTasks] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [sortConfig, setSortConfig] = useState({ 
-        field: "username", 
-        order: "asc" 
+    const [sortConfig, setSortConfig] = useState({
+        field: "username",
+        order: "asc"
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -26,18 +26,24 @@ const TaskList = () => {
     const [showForm, setShowForm] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
+    const [notification, setNotification] = useState(null);
+
+    const showNotification = (message) => {
+        setNotification(message);
+        setTimeout(() => setNotification(null), 3000);
+    };
 
     const loadTasks = useCallback(async (params = {}) => {
         setLoading(true);
         setError(null);
-        
+
         try {
             const { tasks, total_pages } = await fetchTasks({
                 page: params.page || currentPage,
                 sort_by: params.field || sortConfig.field,
                 order: params.order || sortConfig.order,
             });
-            
+
             setTasks(tasks);
             setCurrentPage(params.page || currentPage);
             setTotalPages(total_pages);
@@ -59,20 +65,31 @@ const TaskList = () => {
             await addTask(newTask);
             setShowForm(false);
             loadTasks({ page: 1 });
+            showNotification("Задача успешно добавлена!");
         } catch (err) {
             console.error("Ошибка при добавлении задачи:", err);
         }
     }, [loadTasks]);
 
-    const handleLogin = useCallback(async ({ username, password }) => {
-        try {
-            const data = await loginRequest({ username, password });
-            dispatch(login({ username: data.username, isAdmin: data.is_admin }));
-            setShowLogin(false);
-        } catch (err) {
-            console.error("Ошибка авторизации:", err);
+const handleLogin = useCallback(async ({ username, password }) => {
+    try {
+        const response = await loginRequest({ username, password });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Неверные данные для входа");
         }
-    }, [dispatch]);
+        
+        const data = await response.json();
+        dispatch(login({ 
+            username: data.username, 
+            isAdmin: data.is_admin 
+        }));
+        setShowLogin(false);
+    } catch (err) {
+        throw new Error(err.message || "Ошибка при авторизации");
+    }
+}, [dispatch]);
 
     const handleSaveEditedTask = useCallback(async (updatedTask) => {
         try {
@@ -119,7 +136,7 @@ const TaskList = () => {
         return (
             <div className="pagination">
                 {currentPage > 1 && (
-                    <button 
+                    <button
                         onClick={() => loadTasks({ page: 1 })}
                         className="nav-btn"
                     >
@@ -130,7 +147,7 @@ const TaskList = () => {
                 {pageButtons}
                 {endPage < totalPages && <span>...</span>}
                 {currentPage < totalPages && (
-                    <button 
+                    <button
                         onClick={() => loadTasks({ page: totalPages })}
                         className="nav-btn"
                     >
@@ -142,7 +159,7 @@ const TaskList = () => {
     };
 
     const TaskCard = ({ task }) => (
-        <div 
+        <div
             className="task-card"
             onClick={() => user.isAdmin && setEditingTask(task)}
         >
@@ -156,7 +173,7 @@ const TaskList = () => {
                 <strong>Текст:</strong> {task.text}
             </div>
             <div className="task-field">
-                <strong>Статус:</strong> 
+                <strong>Статус:</strong>
                 {task.is_completed ? "✅ Выполнено" : "⏳ В процессе"}
             </div>
         </div>
@@ -164,12 +181,18 @@ const TaskList = () => {
 
     return (
         <div className="container">
+            {notification && (
+                <div className="notification">
+                    {notification}
+                </div>
+            )}
+
             <div className="header">
                 <h1 className="title">Список задач</h1>
                 {user.isAuthenticated ? (
                     <div className="user-info">
                         <span>Привет, {user.username}! {user.isAdmin && "(админ)"}</span>
-                        <button 
+                        <button
                             onClick={handleLogout}
                             className="button logout-button"
                         >
@@ -177,7 +200,7 @@ const TaskList = () => {
                         </button>
                     </div>
                 ) : (
-                    <button 
+                    <button
                         onClick={() => setShowLogin(true)}
                         className="button login-button"
                     >
@@ -207,8 +230,8 @@ const TaskList = () => {
                             Страница {currentPage} из {totalPages}
                         </div>
                         <Pagination />
-                        
-                        <button 
+
+                        <button
                             onClick={() => setShowForm(true)}
                             className="button add-button"
                         >
@@ -219,12 +242,12 @@ const TaskList = () => {
             )}
 
             {showForm && (
-                <TaskForm 
-                    onSubmit={handleAddTask} 
-                    onClose={() => setShowForm(false)} 
+                <TaskForm
+                    onSubmit={handleAddTask}
+                    onClose={() => setShowForm(false)}
                 />
             )}
-            
+
             {editingTask && (
                 <EditTaskForm
                     task={editingTask}
