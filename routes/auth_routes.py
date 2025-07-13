@@ -31,7 +31,8 @@ def login():
         session['is_authenticated'] = True
         session['user_id'] = user.id
 
-        return jsonify({'message': 'Logged in'}), 200
+        return jsonify({"username": user.username,
+                        "is_admin": user.is_admin}), 200
 
     return jsonify({'error': 'Invalid credentials'}), 401
 

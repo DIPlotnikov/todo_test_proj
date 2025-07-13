@@ -178,5 +178,5 @@ venv
 
 .json
 
-/frontend/
 .idea/
+.sqlite3

@@ -22,9 +22,10 @@ def get_tasks():
 
     page = int(request.args.get('page', 1))
     sort_by = request.args.get('sort_by', 'id')
+    order = request.args.get('order', 'asc')
 
     tasks_page_data = TaskHandlers.get_tasks_page_data(db=db, page=page, per_page=task_per_page, sort_by=sort_by,
-                                                       order="asc")
+                                                       order=order)
     result = {
         "tasks": [task_to_dict(t) for t in tasks_page_data.get("tasks")],
         "total_pages": tasks_page_data.get("total_pages"),
