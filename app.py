@@ -2,12 +2,15 @@ import os
 
 from flask import Flask, send_from_directory
 
-from routes.auth_routes import login, logout, me
+from routes.auth_routes import login, logout, me, check_auth
 from routes.task_routes import get_tasks, create_task, update_task, delete_task
 
 app = Flask(__name__, static_folder="frontend/build", static_url_path="/")
 app.secret_key = os.urandom(24)
 
+from flask_cors import CORS
+
+CORS(app, supports_credentials=True)
 
 # Маршруты для задач
 app.add_url_rule("/tasks", view_func=get_tasks, methods=["GET"])
@@ -19,6 +22,7 @@ app.add_url_rule("/tasks/delete/<int:task_id>", view_func=delete_task, methods=[
 app.add_url_rule("/auth/login", view_func=login, methods=["POST"])
 app.add_url_rule("/auth/logout", view_func=logout, methods=["POST"])
 app.add_url_rule("/auth/me", view_func=me, methods=["GET"])
+app.add_url_rule("/auth/check", view_func=check_auth, methods=["GET"])
 
 # Маршруты для React
 @app.route("/", defaults={"path": ""})

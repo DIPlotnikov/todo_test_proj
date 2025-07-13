@@ -2,7 +2,8 @@ export async function loginRequest({ username, password }) {
     const res = await fetch("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
+        credentials: 'include'
     });
 
     if (!res.ok) {
@@ -12,5 +13,30 @@ export async function loginRequest({ username, password }) {
         throw error;
     }
 
+    return res;
+}
+
+export async function checkAuth() {
+    const res = await fetch("/auth/check", {
+        credentials: 'include' 
+    });
+    
+    if (!res.ok) {
+        throw new Error("Not authenticated");
+    }
+    
+    return await res.json();
+}
+
+export async function logoutRequest() {
+    const res = await fetch("/auth/logout", {
+        method: "POST",
+        credentials: 'include'
+    });
+
+    if (!res.ok) {
+        throw new Error("Logout failed");
+    }
+    
     return res;
 }

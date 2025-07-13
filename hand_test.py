@@ -45,4 +45,4 @@ def create_users():
     print(f"admin verified: {verified}")
 
 if __name__ == "__main__":
-    create_users()
+    create_task()

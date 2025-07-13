@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, make_response
 
 from database.db import SessionLocal
 from database.handlers import UserHandlers
@@ -41,9 +41,21 @@ def logout():
     """
     Деаутентификация
     """
-    session.pop('admin', None)
-    return jsonify({'message': 'Logged out'})
+    session.clear()
+    response = make_response(jsonify({'message': 'Successfully logged out'}))
+    response.set_cookie('session', '', expires=0)
+    return response
 
+def check_auth():
+    if 'user_id' in session:
+        db_session = SessionLocal()
+        user = UserHandlers.get_by_id(db=db_session, user_id=session['user_id'])
+        if user:
+            return jsonify({
+                'username': user.username,
+                'is_admin': user.is_admin
+            }), 200
+    return jsonify({'error': 'Not authenticated'}), 401
 
 def me():
     """
