@@ -20,11 +20,11 @@ def test_get_all_tasks(db_session):
     for i in range(5):
         TaskHandlers.create(db=db_session, username=f"user{i}", email=f"user{i}@x.com", text=f"text{i}")
 
-    tasks = TaskHandlers.get_tasks_page_data(db=db_session, page=1, per_page=3, sort_by="username", order="asc")
-    assert len(tasks) == 3
-    assert tasks[0].username == "user0"
+    tasks_page_1 = TaskHandlers.get_tasks_page_data(db=db_session, page=1, per_page=3, sort_by="username", order="asc")['tasks']
+    assert len(tasks_page_1) == 3
+    assert tasks_page_1[0].username == "user0"
 
-    tasks_page_2 = TaskHandlers.get_tasks_page_data(db=db_session, page=2, per_page=3)
+    tasks_page_2 = TaskHandlers.get_tasks_page_data(db=db_session, page=2, per_page=3)['tasks']
     assert len(tasks_page_2) == 2
 
 
