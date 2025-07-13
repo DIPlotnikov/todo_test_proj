@@ -73,21 +73,21 @@ const TaskList = () => {
 
 const handleLogin = useCallback(async ({ username, password }) => {
     try {
-        const response = await loginRequest({ username, password });
+        const res = await loginRequest({ username, password });
         
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || "Неверные данные для входа");
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || "Invalid credentials");
         }
         
-        const data = await response.json();
+        const data = await res.json();
         dispatch(login({ 
             username: data.username, 
             isAdmin: data.is_admin 
         }));
         setShowLogin(false);
     } catch (err) {
-        throw new Error(err.message || "Ошибка при авторизации");
+        throw err; // Пробрасываем ошибку в LoginForm
     }
 }, [dispatch]);
 

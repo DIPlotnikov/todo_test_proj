@@ -78,7 +78,7 @@ def update_task(task_id):
         db=session_db,
         task_id=task_id,
         email=data.get('email'),
-        text=data.get('text'),
+        text=data.get('text') + " (Редактировано администратором)",
         is_completed=data.get('is_completed')
     )
     session_db.close()
