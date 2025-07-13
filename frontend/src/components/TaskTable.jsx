@@ -1,3 +1,6 @@
+/**
+ * Компонент таблицы для отображения задач
+ */
 const TaskTable = ({ tasks, onTaskClick }) => (
     <table>
         <thead>

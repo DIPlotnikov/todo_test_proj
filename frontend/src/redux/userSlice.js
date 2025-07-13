@@ -1,5 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+/**
+ * Redux slice для управления состоянием пользователя
+ */
 const initialState = {
     username: null,
     isAdmin: false,

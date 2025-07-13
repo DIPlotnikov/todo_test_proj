@@ -1,6 +1,9 @@
 import { useState } from "react";
 import "./css/LoginForm.css";
 
+/**
+ * Компонент формы для входа в систему
+ */
 export default function LoginForm({ onLogin, onClose }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");

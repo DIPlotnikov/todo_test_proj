@@ -1,5 +1,8 @@
 const API_URL = "/tasks";
 
+/**
+ * Функция для загрузки списка задач с пагинацией и сортировкой
+ */
 export async function fetchTasks({ page = 1, sort_by = "id", order = "asc" }) {
     const url = new URL(API_URL, window.location.origin);
     url.searchParams.append("page", page);
@@ -11,6 +14,9 @@ export async function fetchTasks({ page = 1, sort_by = "id", order = "asc" }) {
     return await res.json();
 }
 
+/**
+ * Функция для добавления новой задачи
+ */
 export async function addTask({ username, email, text }) {
     const res = await fetch("/tasks/create", {
         method: "POST",
@@ -22,6 +28,9 @@ export async function addTask({ username, email, text }) {
     return await res.json();
 }
 
+/**
+ * Функция для обновления существующей задачи
+ */
 export async function updateTask(task) {
     const res = await fetch(`/tasks/update/${task.id}`, {
         method: "PUT",

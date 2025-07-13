@@ -1,6 +1,9 @@
 import { useState } from "react";
 import "./css/TaskForm.css";
 
+/**
+ * Компонент формы для добавления новой задачи
+ */
 export default function TaskForm({ onSubmit, onClose }) {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");

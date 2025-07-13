@@ -1,219 +1,80 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
 import Filters from "../components/Filters";
 import TaskForm from "../components/TaskForm";
 import LoginForm from "../components/LoginForm";
 import EditTaskForm from "../components/EditTaskForm";
-import { fetchTasks, addTask, updateTask } from "../api/tasks";
-import { login, logout } from "../redux/userSlice";
-import { loginRequest, checkAuth, logoutRequest } from "../api/auth";
-import "./css/TaskList.css"; // Импорт CSS файла
+import Header from "../components/Header";
+import TaskListContent from "../components/TaskListContent";
+import { useTasks } from "../hooks/useTasks";
+import { useAuth } from "../hooks/useAuth";
+import { useNotification } from "../hooks/useNotification";
+import "./css/TaskList.css";
 
+/**
+ * Основной компонент для отображения списка задач
+ */
 const TaskList = () => {
-    const dispatch = useDispatch();
-    const user = useSelector(state => state.user);
-
-    const [tasks, setTasks] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [sortConfig, setSortConfig] = useState({
-        field: "username",
-        order: "asc"
-    });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const { user, handleLogin, handleLogout } = useAuth();
+    const { 
+        tasks, 
+        currentPage, 
+        totalPages, 
+        loading, 
+        error, 
+        loadTasks, 
+        handleSearch, 
+        handleAddTask, 
+        handleUpdateTask 
+    } = useTasks();
+    const { notification, showNotification } = useNotification();
 
     const [showForm, setShowForm] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
-    const [notification, setNotification] = useState(null);
 
-    const showNotification = (message) => {
-        setNotification(message);
-        setTimeout(() => setNotification(null), 3000);
+    // Обработчики событий
+    const onAddTask = async (newTask) => {
+        const result = await handleAddTask(newTask);
+        if (result.success) {
+            setShowForm(false);
+            showNotification("Задача успешно добавлена!");
+        }
     };
 
-    const loadTasks = useCallback(async (params = {}) => {
-        setLoading(true);
-        setError(null);
+    const onEditTask = (task) => {
+        setEditingTask(task);
+    };
 
-        try {
-            const { tasks, total_pages } = await fetchTasks({
-                page: params.page || currentPage,
-                sort_by: params.field || sortConfig.field,
-                order: params.order || sortConfig.order,
-            });
-
-            setTasks(tasks);
-            setCurrentPage(params.page || currentPage);
-            setTotalPages(total_pages);
-        } catch (err) {
-            setError("Ошибка загрузки задач");
-            console.error("Ошибка загрузки задач:", err);
-        } finally {
-            setLoading(false);
-        }
-    }, [currentPage, sortConfig]);
-
-    const handleSearch = useCallback(
-        ({ sort_by, order }) => {
-            const newConfig = { field: sort_by, order };
-
-            // Если фильтры не изменились — ничего не делаем
-            if (
-                newConfig.field === sortConfig.field &&
-                newConfig.order === sortConfig.order
-            ) {
-                return;
-            }
-
-            setSortConfig(newConfig);
-            // ⚠ сохраняем текущую страницу, не сбрасываем на 1
-            loadTasks({ page: currentPage, field: sort_by, order });
-        },
-        [sortConfig, loadTasks, currentPage]
-    );
-
-    const handleAddTask = useCallback(async (newTask) => {
-        try {
-            await addTask(newTask);
-            setShowForm(false);
-            loadTasks({ page: 1 });
-            showNotification("Задача успешно добавлена!");
-        } catch (err) {
-            console.error("Ошибка при добавлении задачи:", err);
-        }
-    }, [loadTasks]);
-
-    const handleLogin = useCallback(async ({ username, password }) => {
-        try {
-            const res = await loginRequest({ username, password });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error || "Invalid credentials");
-            }
-
-            const data = await res.json();
-            dispatch(login({
-                username: data.username,
-                isAdmin: data.is_admin
-            }));
-            setShowLogin(false);
-        } catch (err) {
-            throw err; // Пробрасываем ошибку в LoginForm
-        }
-    }, [dispatch]);
-
-    const handleSaveEditedTask = useCallback(async (updatedTask) => {
-        try {
-            await updateTask(updatedTask);
+    const onSaveEditedTask = async (updatedTask) => {
+        const result = await handleUpdateTask(updatedTask);
+        if (result.success) {
             setEditingTask(null);
-            loadTasks();
-        } catch (err) {
-            console.error("Ошибка при обновлении задачи:", err);
+        } else {
             showNotification("Ошибка при обновлении задачи. Авторизуйтесь и попробуйте ещё раз.");
         }
-    }, [loadTasks]);
+    };
 
-    const handleLogout = useCallback(async () => {
-        try {
-            await logoutRequest(); // Сначала очищаем сессию на сервере
-            dispatch(logout()); // Затем обновляем состояние в Redux
-        } catch (err) {
-            console.error("Ошибка при выходе:", err);
-            dispatch(logout());
+    const onLogin = async (credentials) => {
+        const result = await handleLogin(credentials);
+        if (result.success) {
+            setShowLogin(false);
+        } else {
+            throw result.error;
         }
-    }, [dispatch]);
+    };
 
-    useEffect(() => {
-        const checkAuthStatus = async () => {
-            try {
-                const data = await checkAuth();
-                dispatch(login({ username: data.username, isAdmin: data.is_admin }));
-            } catch {
-                console.log("User is not authenticated");
-            }
-        };
+    const onLogout = async () => {
+        await handleLogout();
+    };
 
-        checkAuthStatus();
-    }, [dispatch]);
+    const onPageChange = (page) => {
+        loadTasks({ page });
+    };
 
-    // Отдельный useEffect для первичной загрузки
+    // Первичная загрузка задач
     useEffect(() => {
         loadTasks();
     }, []);
-
-
-    const Pagination = () => {
-        if (totalPages <= 1) return null;
-
-        const pageButtons = [];
-        const maxVisible = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-
-        if (endPage - startPage + 1 < maxVisible) {
-            startPage = Math.max(1, endPage - maxVisible + 1);
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            pageButtons.push(
-                <button
-                    key={i}
-                    onClick={() => loadTasks({ page: i })}
-                    className={`page-btn ${currentPage === i ? 'active' : ''}`}
-                >
-                    {i}
-                </button>
-            );
-        }
-
-        return (
-            <div className="pagination">
-                {currentPage > 1 && (
-                    <button
-                        onClick={() => loadTasks({ page: 1 })}
-                        className="nav-btn"
-                    >
-                        «
-                    </button>
-                )}
-                {startPage > 1 && <span>...</span>}
-                {pageButtons}
-                {endPage < totalPages && <span>...</span>}
-                {currentPage < totalPages && (
-                    <button
-                        onClick={() => loadTasks({ page: totalPages })}
-                        className="nav-btn"
-                    >
-                        »
-                    </button>
-                )}
-            </div>
-        );
-    };
-
-    const TaskCard = ({ task }) => (
-        <div
-            className="task-card"
-            onClick={() => user.isAdmin && setEditingTask(task)}
-        >
-            <div className="task-field">
-                <strong>Имя:</strong> {task.username}
-            </div>
-            <div className="task-field">
-                <strong>Email:</strong> {task.email}
-            </div>
-            <div className="task-field task-text">
-                <strong>Текст:</strong> {task.text}
-            </div>
-            <div className="task-field">
-                <strong>Статус:</strong>
-                {task.is_completed ? "✅ Выполнено" : "⏳ В процессе"}
-            </div>
-        </div>
-    );
 
     return (
         <div className="container">
@@ -223,63 +84,36 @@ const TaskList = () => {
                 </div>
             )}
 
-            <div className="header">
-                <h1 className="title">Список задач</h1>
-                {user.isAuthenticated ? (
-                    <div className="user-info">
-                        <span>Привет, {user.username}! {user.isAdmin && "(админ)"}</span>
-                        <button
-                            onClick={handleLogout}
-                            className="button logout-button"
-                        >
-                            Выйти
-                        </button>
-                    </div>
-                ) : (
-                    <button
-                        onClick={() => setShowLogin(true)}
-                        className="button login-button"
-                    >
-                        Войти
-                    </button>
-                )}
-            </div>
+            <Header 
+                user={user}
+                onLogin={() => setShowLogin(true)}
+                onLogout={onLogout}
+            />
 
-            {showLogin && <LoginForm onLogin={handleLogin} onClose={() => setShowLogin(false)} />}
+            {showLogin && (
+                <LoginForm 
+                    onLogin={onLogin} 
+                    onClose={() => setShowLogin(false)} 
+                />
+            )}
 
             <Filters onSearch={handleSearch} />
 
-            {loading ? (
-                <div className="loading">Загрузка...</div>
-            ) : error ? (
-                <div className="error">{error}</div>
-            ) : (
-                <>
-                    <div className="tasks-container">
-                        {tasks.map(task => (
-                            <TaskCard key={task.id} task={task} />
-                        ))}
-                    </div>
-
-                    <div className="pagination-container">
-                        <div className="page-info">
-                            Страница {currentPage} из {totalPages}
-                        </div>
-                        <Pagination />
-
-                        <button
-                            onClick={() => setShowForm(true)}
-                            className="button add-button"
-                        >
-                            Добавить задачу
-                        </button>
-                    </div>
-                </>
-            )}
+            <TaskListContent
+                tasks={tasks}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                loading={loading}
+                error={error}
+                user={user}
+                onPageChange={onPageChange}
+                onEditTask={onEditTask}
+                onAddTask={() => setShowForm(true)}
+            />
 
             {showForm && (
                 <TaskForm
-                    onSubmit={handleAddTask}
+                    onSubmit={onAddTask}
                     onClose={() => setShowForm(false)}
                 />
             )}
@@ -287,7 +121,7 @@ const TaskList = () => {
             {editingTask && (
                 <EditTaskForm
                     task={editingTask}
-                    onSave={handleSaveEditedTask}
+                    onSave={onSaveEditedTask}
                     onClose={() => setEditingTask(null)}
                 />
             )}

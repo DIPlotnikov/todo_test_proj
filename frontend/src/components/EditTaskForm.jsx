@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import "./css/EditTaskForm.css";
 
+/**
+ * Компонент формы для редактирования задачи
+ */
 const EditTaskForm = ({ task, onSave, onClose }) => {
     // Удаляем отметку "Редактировано администратором" при инициализации
     const initialText = task.text.replace(/\s*\*Редактировано администратором\*$/, '');

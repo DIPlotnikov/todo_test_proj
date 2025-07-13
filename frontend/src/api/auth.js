@@ -1,3 +1,6 @@
+/**
+ * Функция для отправки запроса на вход в систему
+ */
 export async function loginRequest({ username, password }) {
     const res = await fetch("/auth/login", {
         method: "POST",
@@ -16,6 +19,9 @@ export async function loginRequest({ username, password }) {
     return res;
 }
 
+/**
+ * Функция для проверки статуса аутентификации пользователя
+ */
 export async function checkAuth() {
     const res = await fetch("/auth/check", {
         credentials: 'include' 
@@ -28,6 +34,9 @@ export async function checkAuth() {
     return await res.json();
 }
 
+/**
+ * Функция для выхода из системы
+ */
 export async function logoutRequest() {
     const res = await fetch("/auth/logout", {
         method: "POST",

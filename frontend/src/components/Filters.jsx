@@ -1,6 +1,9 @@
 import { useState } from "react";
 import "./css/Filters.css";
 
+/**
+ * Компонент для фильтрации и сортировки задач
+ */
 export default function Filters({ onSearch }) {
     const [sortBy, setSortBy] = useState("username");
     const [order, setOrder] = useState("asc");
