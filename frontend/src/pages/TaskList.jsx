@@ -55,10 +55,24 @@ const TaskList = () => {
         }
     }, [currentPage, sortConfig]);
 
-    const handleSearch = useCallback(({ sort_by, order }) => {
-        setSortConfig({ field: sort_by, order });
-        loadTasks({ page: 1, field: sort_by, order });
-    }, [loadTasks]);
+    const handleSearch = useCallback(
+        ({ sort_by, order }) => {
+            const newConfig = { field: sort_by, order };
+
+            // Если фильтры не изменились — ничего не делаем
+            if (
+                newConfig.field === sortConfig.field &&
+                newConfig.order === sortConfig.order
+            ) {
+                return;
+            }
+
+            setSortConfig(newConfig);
+            // ⚠ сохраняем текущую страницу, не сбрасываем на 1
+            loadTasks({ page: currentPage, field: sort_by, order });
+        },
+        [sortConfig, loadTasks, currentPage]
+    );
 
     const handleAddTask = useCallback(async (newTask) => {
         try {
@@ -74,16 +88,16 @@ const TaskList = () => {
     const handleLogin = useCallback(async ({ username, password }) => {
         try {
             const res = await loginRequest({ username, password });
-            
+
             if (!res.ok) {
                 const errorData = await res.json();
                 throw new Error(errorData.error || "Invalid credentials");
             }
-            
+
             const data = await res.json();
-            dispatch(login({ 
-                username: data.username, 
-                isAdmin: data.is_admin 
+            dispatch(login({
+                username: data.username,
+                isAdmin: data.is_admin
             }));
             setShowLogin(false);
         } catch (err) {
@@ -102,34 +116,34 @@ const TaskList = () => {
         }
     }, [loadTasks]);
 
-const handleLogout = useCallback(async () => {
-    try {
-        await logoutRequest(); // Сначала очищаем сессию на сервере
-        dispatch(logout()); // Затем обновляем состояние в Redux
-    } catch (err) {
-        console.error("Ошибка при выходе:", err);
-        dispatch(logout());
-    }
-}, [dispatch]);
+    const handleLogout = useCallback(async () => {
+        try {
+            await logoutRequest(); // Сначала очищаем сессию на сервере
+            dispatch(logout()); // Затем обновляем состояние в Redux
+        } catch (err) {
+            console.error("Ошибка при выходе:", err);
+            dispatch(logout());
+        }
+    }, [dispatch]);
 
     useEffect(() => {
-    const checkAuthStatus = async () => {
-        try {
-            const data = await checkAuth();
-            dispatch(login({ 
-                username: data.username, 
-                isAdmin: data.is_admin 
-            }));
-        } catch (err) {
-            // Пользователь не аутентифицирован - это нормально
-            console.log("User is not authenticated");
-        } finally {
-            loadTasks();
-        }
-    };
+        const checkAuthStatus = async () => {
+            try {
+                const data = await checkAuth();
+                dispatch(login({ username: data.username, isAdmin: data.is_admin }));
+            } catch {
+                console.log("User is not authenticated");
+            }
+        };
 
-    checkAuthStatus();
-}, [dispatch, loadTasks]);
+        checkAuthStatus();
+    }, [dispatch]);
+
+    // Отдельный useEffect для первичной загрузки
+    useEffect(() => {
+        loadTasks();
+    }, []);
+
 
     const Pagination = () => {
         if (totalPages <= 1) return null;
