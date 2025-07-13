@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./EditTaskForm.css";
 
 const EditTaskForm = ({ task, onSave, onClose }) => {
     const [text, setText] = useState(task.text);
@@ -18,27 +19,48 @@ const EditTaskForm = ({ task, onSave, onClose }) => {
     };
 
     return (
-        <div style={{
-            position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
-            background: "white", padding: "20px", border: "1px solid black", zIndex: 1000
-        }}>
-            <h3>Редактировать задачу</h3>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Текст задачи:</label><br />
-                    <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} />
-                </div>
-                <div>
-                    <label>
-                        <input type="checkbox" checked={isCompleted} onChange={(e) => setIsCompleted(e.target.checked)} />
-                        Выполнено
-                    </label>
-                </div>
-                <div style={{ marginTop: 10 }}>
-                    <button type="submit">Сохранить</button>
-                    <button type="button" onClick={onClose}>Отмена</button>
-                </div>
-            </form>
+        <div className="edit-task-overlay">
+            <div className="edit-task-modal">
+                <h3 className="edit-task-title">Редактировать задачу</h3>
+                <form className="edit-task-form" onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label className="form-label">Текст задачи:</label>
+                        <textarea
+                            className="form-textarea"
+                            value={text}
+                            onChange={(e) => setText(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="checkbox-group">
+                        <input
+                            className="checkbox-input"
+                            type="checkbox"
+                            id="completed"
+                            checked={isCompleted}
+                            onChange={(e) => setIsCompleted(e.target.checked)}
+                        />
+                        <label className="checkbox-label" htmlFor="completed">
+                            Выполнено
+                        </label>
+                    </div>
+                    <div className="form-actions">
+                        <button
+                            type="button"
+                            className="cancel-btn"
+                            onClick={onClose}
+                        >
+                            Отмена
+                        </button>
+                        <button
+                            type="submit"
+                            className="submit-btn"
+                        >
+                            Сохранить
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
