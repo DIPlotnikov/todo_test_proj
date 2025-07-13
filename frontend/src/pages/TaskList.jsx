@@ -7,7 +7,7 @@ import EditTaskForm from "../components/EditTaskForm";
 import { fetchTasks, addTask, updateTask } from "../api/tasks";
 import { login, logout } from "../redux/userSlice";
 import { loginRequest } from "../api/auth";
-import "./TaskList.css"; // Импорт CSS файла
+import "./css/TaskList.css"; // Импорт CSS файла
 
 const TaskList = () => {
     const dispatch = useDispatch();

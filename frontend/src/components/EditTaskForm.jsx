@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./EditTaskForm.css";
+import "./css/EditTaskForm.css";
 
 const EditTaskForm = ({ task, onSave, onClose }) => {
     const [text, setText] = useState(task.text);
