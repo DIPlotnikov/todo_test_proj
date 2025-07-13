@@ -10,6 +10,13 @@ from database.models import Task
 from routes.serializers import task_to_dict
 
 def get_tasks():
+    """
+    Получение списка задач
+    Метод GET
+    Ожидаемые параметры:
+    page - номер страницы (начиная с 1)
+    sort_by - поле для сортировки (id, username, email, is_completed)
+    """
     task_per_page = TASK_PER_PAGE
     db = SessionLocal()
 
@@ -28,6 +35,14 @@ def get_tasks():
 
 
 def create_task():
+    """
+    Создание новой задачи
+    Метод POST
+    Ожидаемые параметры:
+    username - имя пользователя
+    email - email пользователя
+    text - текст задачи
+    """
     data = request.get_json()
     session_db = SessionLocal()
     new_task = TaskHandlers.create(
@@ -40,6 +55,14 @@ def create_task():
 
 
 def update_task(task_id):
+    """
+    Обновление задачи
+    Метод PUT
+    Ожидаемые параметры:
+    email - email пользователя
+    text - текст задачи
+    is_completed - статус задачи
+    """
     if not session.get('admin'):
         return jsonify({'error': 'Unauthorized'}), 403
 
@@ -62,6 +85,12 @@ def update_task(task_id):
     return jsonify(task_to_dict(updated_task))
 
 def delete_task(task_id):
+    """
+    Удаление задачи
+    Метод DELETE
+    Ожидаемые параметры:
+    task_id - id задачи
+    """
     if not session.get('admin'):
         return jsonify({'error': 'Unauthorized'}), 403
 

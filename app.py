@@ -1,7 +1,12 @@
+import os
+
 from flask import Flask
+
+from routes.auth_routes import login, logout, me
 from routes.task_routes import get_tasks, create_task, update_task, delete_task
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
 
 # Маршруты для задач
@@ -11,6 +16,9 @@ app.add_url_rule("/tasks/update/<int:task_id>", view_func=update_task, methods=[
 app.add_url_rule("/tasks/delete/<int:task_id>", view_func=delete_task, methods=["DELETE"])
 
 # Маршруты для аутентификации
+app.add_url_rule("/auth/login", view_func=login, methods=["POST"])
+app.add_url_rule("/auth/logout", view_func=logout, methods=["POST"])
+app.add_url_rule("/auth/me", view_func=me, methods=["GET"])
 
 
 
