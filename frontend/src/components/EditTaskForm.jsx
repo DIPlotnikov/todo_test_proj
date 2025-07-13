@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import "./css/EditTaskForm.css";
 
 const EditTaskForm = ({ task, onSave, onClose }) => {
-    const [text, setText] = useState(task.text);
+    // Удаляем отметку "Редактировано администратором" при инициализации
+    const initialText = task.text.replace(/\s*\*Редактировано администратором\*$/, '');
+    const [text, setText] = useState(initialText);
     const [isCompleted, setIsCompleted] = useState(task.is_completed);
 
     const handleSubmit = async (e) => {
@@ -10,7 +12,7 @@ const EditTaskForm = ({ task, onSave, onClose }) => {
 
         const updatedTask = {
             ...task,
-            text,
+            text, // Используем очищенный текст
             is_completed: isCompleted,
         };
 

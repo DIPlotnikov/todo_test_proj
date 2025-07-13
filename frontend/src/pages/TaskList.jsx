@@ -98,6 +98,7 @@ const TaskList = () => {
             loadTasks();
         } catch (err) {
             console.error("Ошибка при обновлении задачи:", err);
+            showNotification("Ошибка при обновлении задачи. Авторизуйтесь и попробуйте ещё раз.");
         }
     }, [loadTasks]);
 
