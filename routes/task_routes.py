@@ -9,6 +9,7 @@ from database.handlers import TaskHandlers
 from database.models import Task
 from routes.serializers import task_to_dict
 
+
 def get_tasks():
     """
     Получение списка задач
@@ -84,6 +85,7 @@ def update_task(task_id):
     session_db.close()
 
     return jsonify(task_to_dict(updated_task))
+
 
 def delete_task(task_id):
     """

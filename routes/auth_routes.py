@@ -47,6 +47,9 @@ def logout():
     return response
 
 def check_auth():
+    """
+    Проверка авторизации
+    """
     if 'user_id' in session:
         db_session = SessionLocal()
         user = UserHandlers.get_by_id(db=db_session, user_id=session['user_id'])

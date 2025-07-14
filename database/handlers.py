@@ -89,9 +89,9 @@ class TaskHandlers:
     @staticmethod
     def update(db: Session,
                task_id: int,
-               text: Optional[str] = None,
-               email: Optional[str] = None,
-               is_completed: Optional[bool] = None) -> Optional[Task]:
+               text: str = None,
+               email: str= None,
+               is_completed: bool = None) -> Optional[Task]:
         """
         Обновление задачи.
         :param db: сессия sqlalchemy
